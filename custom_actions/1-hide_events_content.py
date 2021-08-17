@@ -53,7 +53,7 @@ def check_type(event, key, label):
     return event
 
 
-def hide_content(event_content: dict):
+def hide_content(event_content: EventContent):
     events_to_hide = event_content.get("data", {}).get("content", {})
 
     if events_to_hide.get(HIDE_LABEL, {}) and events_to_hide:
