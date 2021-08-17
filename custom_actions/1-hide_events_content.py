@@ -44,9 +44,9 @@ def check_type(event, key, label):
     if event.get(label):
         if key.lower() == "cpf":
             event[label] = change_cpf_cnpj(event[label])
-        if key.lower() == "telefone":
+        else if key.lower() == "telefone":
             event[label] = change_phone(event[label])
-        if key.lower() == "matricula":
+        else if key.lower() == "matricula":
             event[label] = change_matricula(event[label])
         else:
             event[label] = change_general(event[label])
