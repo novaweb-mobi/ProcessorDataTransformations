@@ -1,4 +1,7 @@
 from typing import Set
+
+from dictor import dictor
+
 from utils import EventContent
 
 HIDER = "x"
@@ -7,57 +10,105 @@ HIDE_LABEL = "hide"
 
 def add_actions():
     return {
-        "rename_fields": {
+        "anonymize": {
             "operation": hide_content,
-            "name": "Criação de dados Anonimos"
+            "name": "Anonimizar dados",
+            "data_fields": {
+                "key": "fields",
+                "label": "Campos a Anonimizar",
+                "field_type": "object",
+                "field_options": {
+                    "property_key": {
+                        "label": "Campo",
+                        "field_type": "text",
+                        "field_options": {
+                            "format": "[^.]"
+                        }
+                    },
+                    "property_value": {
+                        "label": "Tipo de Campo",
+                        "field_type": "select",
+                        "field_options": {
+                            "options": [
+                                {
+                                    "label": anonymizer_type["description"],
+                                    "value": anonymizer_type_key
+                                }
+                                for anonymizer_type_key, anonymizer_type
+                                in types.items()]
+                        }
+                    }
+                }
+            }
         }
     }
 
 
-def replacement(n: int, tag: str, base: str, place: bool):
-    if not place:
-        return tag*(len(base)-n) + base[-n:]
-    return base[:n] + tag*(len(base)-n)
+def replace_keeping_n_digits(digits_to_keep: int, replacer: str,
+                             original: str, keep_start: bool):
+    digits_to_replace = len(original) - digits_to_keep
+    if keep_start:
+        return original[:digits_to_keep] + (replacer * digits_to_replace)
+
+    return (replacer * digits_to_replace) + original[-digits_to_keep:]
 
 
 def change_phone(phone):
-    phone = replacement(3, HIDER, str(phone), False)
+    phone = replace_keeping_n_digits(3, HIDER, str(phone), False)
     return phone
 
 
 def change_general(value: str):
-    value = replacement(int(len(value)*0.3), HIDER, value, True)
+    thirty_percent = int(len(value) * 0.3)
+    value = replace_keeping_n_digits(thirty_percent, HIDER,
+                                     str(value), True)
     return value
 
 
 def change_matricula(matricula):
-    matricula = replacement(3, HIDER, str(matricula), True)
+    matricula = replace_keeping_n_digits(3, HIDER, str(matricula), True)
     return matricula
 
 
 def change_cpf_cnpj(cpf: str):
-    cpf = replacement(3, HIDER, cpf, True)
+    cpf = replace_keeping_n_digits(3, HIDER, str(cpf), True)
     return cpf
 
 
-def check_type(event, key, label):
-    if event.get(label):
-        if key.lower() == "cpf":
-            event[label] = change_cpf_cnpj(event[label])
-        else if key.lower() == "telefone":
-            event[label] = change_phone(event[label])
-        else if key.lower() == "matricula":
-            event[label] = change_matricula(event[label])
-        else:
-            event[label] = change_general(event[label])
-    return event
+types = {
+    "cpf": {
+        "anonymizer": change_cpf_cnpj,
+        "description": "CPF/CNPJ"
+    },
+    "telefone": {
+        "anonymizer": change_phone,
+        "description": "Telefone"
+    },
+    "matricula": {
+        "anonymizer": change_matricula,
+        "description": "Matrícula"
+    },
+    "default": {
+        "anonymizer": change_general,
+        "description": "Outros"
+    }
+}
 
 
-def hide_content(event_content: EventContent):
-    events_to_hide = event_content.get("data", {}).get("content", {})
+def check_anonymize_type(field_type):
+    return types.get(field_type, {}) \
+        .get("anonymizer", change_general)
 
-    if events_to_hide.get(HIDE_LABEL, {}) and events_to_hide:
-        for label, type_ in events_to_hide[HIDE_LABEL].items():
-            events_to_hide = check_type(events_to_hide, type_, label)
-        event_content["data"]["content"] = events_to_hide
+
+def hide_content(event_content: EventContent, data: dict):
+    fields = data.get("fields", {})
+
+    for field_name, field_type in fields.items():
+        anonimize_operation = check_anonymize_type(field_type)
+
+        event_content["event"]["content"]["content"][field_name] = \
+            anonimize_operation(dictor(event_content,
+                                       f"event.content.content.{field_name}",
+                                       ""))
+
     return event_content
