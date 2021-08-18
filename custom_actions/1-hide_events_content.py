@@ -13,7 +13,7 @@ def add_actions():
         "anonymize": {
             "operation": hide_content,
             "name": "Anonimizar dados",
-            "data_fields": {
+            "data_fields": [{
                 "key": "fields",
                 "label": "Campos a Anonimizar",
                 "field_type": "object",
@@ -39,7 +39,7 @@ def add_actions():
                         }
                     }
                 }
-            }
+            }]
         }
     }
 
