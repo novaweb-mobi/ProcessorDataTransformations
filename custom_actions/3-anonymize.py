@@ -37,11 +37,11 @@ def anom_content(event_content: EventContent, data: dict):
 
     for i,char in enumerate(field_content):
         if char in string.digits:
-            field_content[i] = random.choice(string.digits)
+            field_content = field_content[:i] + random.choice(string.digits) + field_content[i+1:]
         elif char in string.whitespace:
-            field_content[i] = char
+            pass
         else:
-            field_content[i] = random.choice(string.ascii_letters)
+            field_content = field_content[:i] + random.choice(string.ascii_letters) + field_content[i+1:]
 
     path = field.split(".")
 
