@@ -38,10 +38,12 @@ def anom_content(event_content: EventContent, data: dict):
     for i,char in enumerate(field_content):
         if char in string.digits:
             field_content = field_content[:i] + random.choice(string.digits) + field_content[i+1:]
-        elif char in string.whitespace:
-            pass
-        else:
-            field_content = field_content[:i] + random.choice(string.ascii_letters) + field_content[i+1:]
+        elif char in string.ascii_lowercase:
+            field_content = field_content[:i] + random.choice(string.ascii_lowercase) + field_content[i+1:]
+        elif char in string.ascii_uppercase:
+            field_content = field_content[:i] + random.choice(string.ascii_uppercase) + field_content[i+1:]
+        elif char in [" ", "\t", "\n"]:
+            field_content = field_content[:i] + " " + field_content[i+1:]
 
     path = field.split(".")
 
