@@ -12,10 +12,10 @@ def add_actions():
     return {
         "anonymize": {
             "operation": hide_content,
-            "name": "Anonimizar dados",
+            "name": "Ocultar dados",
             "data_fields": [{
                 "key": "fields",
-                "label": "Campos a Anonimizar",
+                "label": "Campos a Ocultar",
                 "field_type": "object",
                 "field_options": {
                     "property_key": {
