@@ -30,7 +30,7 @@ def add_actions():
 def anom_content(event_content: EventContent, data: dict):
     field = data.get("field", {})
 
-    field_content = dictor.get(f"event.content.content.{field}")
+    field_content = dictor(f"event.content.content.{field}")
 
     if not isinstance(field_content, str):
         return event_content
@@ -50,5 +50,5 @@ def anom_content(event_content: EventContent, data: dict):
         content = content.get(path_component)
 
     content[path[-1]] = field_content
-    
+
     return event_content
